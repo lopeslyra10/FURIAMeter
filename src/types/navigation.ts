@@ -18,10 +18,10 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Home: undefined;
-  CreateAppointment: undefined;
+  CreateInteraction: undefined;
   Profile: undefined;
   AdminDashboard: undefined;
-  DoctorDashboard: undefined;
-  PatientDashboard: undefined;
+  StaffDashboard: undefined;
+  FanDashboard: undefined;
   UserManagement: undefined;
 };

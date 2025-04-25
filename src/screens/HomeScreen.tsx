@@ -7,8 +7,6 @@ import { HeaderContainer, HeaderTitle } from '../components/Header';
 import theme from '../styles/theme';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Appointment } from '../types/appointments';
-import { Doctor } from '../types/doctors';
 import { RootStackParamList } from '../types/navigation';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -16,71 +14,53 @@ type HomeScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
 };
 
-const doctors: Doctor[] = [
-  {
-    id: '1',
-    name: 'Dr. João Silva',
-    specialty: 'Cardiologista',
-    image: 'https://mighty.tools/mockmind-api/content/human/91.jpg',
-  },
-  {
-    id: '2',
-    name: 'Dra. Maria Santos',
-    specialty: 'Dermatologista',
-    image: 'https://mighty.tools/mockmind-api/content/human/97.jpg',
-  },
-  {
-    id: '3',
-    name: 'Dr. Pedro Oliveira',
-    specialty: 'Oftalmologista',
-    image: 'https://mighty.tools/mockmind-api/content/human/79.jpg',
-  },
-];
+interface Interaction {
+  id: string;
+  fanId: string;
+  fanName: string;
+  interactionType: string;
+  description: string;
+  date: string;
+  time: string;
+  status: 'pending' | 'confirmed';
+}
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadAppointments = async () => {
+  const loadInteractions = async () => {
     try {
-      const storedAppointments = await AsyncStorage.getItem('appointments');
-      if (storedAppointments) {
-        setAppointments(JSON.parse(storedAppointments));
+      const stored = await AsyncStorage.getItem('@Furiameter:interactions');
+      if (stored) {
+        setInteractions(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Erro ao carregar consultas:', error);
+      console.error('Erro ao carregar interações:', error);
     }
   };
 
   useFocusEffect(
     React.useCallback(() => {
-      loadAppointments();
+      loadInteractions();
     }, [])
   );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadAppointments();
+    await loadInteractions();
     setRefreshing(false);
   };
 
-  const getDoctorInfo = (doctorId: string): Doctor | undefined => {
-    return doctors.find(doctor => doctor.id === doctorId);
-  };
-
-  const renderAppointment = ({ item }: { item: Appointment }) => {
-    const doctor = getDoctorInfo(item.doctorId);
-    
+  const renderInteraction = ({ item }: { item: Interaction }) => {
     return (
-      <AppointmentCard>
-        <DoctorImage source={{ uri: doctor?.image || 'https://via.placeholder.com/100' }} />
+      <InteractionCard>
         <InfoContainer>
-          <DoctorName>{doctor?.name || 'Médico não encontrado'}</DoctorName>
-          <DoctorSpecialty>{doctor?.specialty || 'Especialidade não encontrada'}</DoctorSpecialty>
-          <DateTime>{new Date(item.date).toLocaleDateString()} - {item.time}</DateTime>
+          <InteractionType>{item.interactionType}</InteractionType>
+          <DateTime>{item.date} às {item.time}</DateTime>
           <Description>{item.description}</Description>
           <Status status={item.status}>
-            {item.status === 'pending' ? 'Pendente' : 'Confirmado'}
+            {item.status === 'pending' ? 'Pendente' : 'Confirmada'}
           </Status>
           <ActionButtons>
             <ActionButton>
@@ -91,22 +71,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             </ActionButton>
           </ActionButtons>
         </InfoContainer>
-      </AppointmentCard>
+      </InteractionCard>
     );
   };
 
   return (
     <Container>
       <HeaderContainer>
-        <HeaderTitle>Minhas Consultas</HeaderTitle>
+        <HeaderTitle>Minhas Interações</HeaderTitle>
       </HeaderContainer>
 
       <Content>
         <Button
-          title="Agendar Nova Consulta"
+          title="Nova Interação"
           icon={
             <FontAwesome
-              name="calendar-plus-o"
+              name="plus"
               size={20}
               color="white"
               style={{ marginRight: 8 }}
@@ -118,18 +98,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             padding: 12,
             marginBottom: theme.spacing.medium
           }}
-          onPress={() => navigation.navigate('CreateAppointment')}
+          onPress={() => navigation.navigate('CreateInteraction')}
         />
 
-        <AppointmentList
-          data={appointments}
-          keyExtractor={(item: Appointment) => item.id}
-          renderItem={renderAppointment}
+        <InteractionList
+          data={interactions}
+          keyExtractor={(item: Interaction) => item.id}
+          renderItem={renderInteraction}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <EmptyText>Nenhuma consulta agendada</EmptyText>
+            <EmptyText>Nenhuma interação registrada</EmptyText>
           }
         />
       </Content>
@@ -147,17 +127,15 @@ const Content = styled.View`
   padding: ${theme.spacing.medium}px;
 `;
 
-const AppointmentList = styled(FlatList)`
+const InteractionList = styled(FlatList)`
   flex: 1;
 `;
 
-const AppointmentCard = styled.View`
+const InteractionCard = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 8px;
   padding: ${theme.spacing.medium}px;
   margin-bottom: ${theme.spacing.medium}px;
-  flex-direction: row;
-  align-items: center;
   elevation: 2;
   shadow-color: #000;
   shadow-opacity: 0.1;
@@ -165,28 +143,14 @@ const AppointmentCard = styled.View`
   shadow-offset: 0px 2px;
 `;
 
-const DoctorImage = styled.Image`
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  margin-right: ${theme.spacing.medium}px;
-`;
-
 const InfoContainer = styled.View`
   flex: 1;
 `;
 
-const DoctorName = styled.Text`
+const InteractionType = styled.Text`
   font-size: ${theme.typography.subtitle.fontSize}px;
   font-weight: ${theme.typography.subtitle.fontWeight};
   color: ${theme.colors.text};
-`;
-
-const DoctorSpecialty = styled.Text`
-  font-size: ${theme.typography.body.fontSize}px;
-  color: ${theme.colors.text};
-  opacity: 0.8;
-  margin-bottom: 4px;
 `;
 
 const DateTime = styled.Text`
@@ -204,7 +168,7 @@ const Description = styled.Text`
 
 const Status = styled.Text<{ status: string }>`
   font-size: ${theme.typography.body.fontSize}px;
-  color: ${(props: { status: string }) => props.status === 'pending' ? theme.colors.error : theme.colors.success};
+  color: ${(props) => props.status === 'pending' ? theme.colors.error : theme.colors.success};
   margin-top: 4px;
   font-weight: bold;
 `;

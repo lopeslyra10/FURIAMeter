@@ -34,8 +34,8 @@ const LoginScreen: React.FC = () => {
 
   return (
     <Container>
-      <Title>Login</Title>
-      
+      <Title>Bem-vindo ao FURIAMeter</Title>
+
       <Input
         placeholder="Email"
         value={email}
@@ -64,18 +64,16 @@ const LoginScreen: React.FC = () => {
       />
 
       <Button
-        title="Cadastrar Novo Paciente"
+        title="Cadastrar Novo Fã"
         onPress={() => navigation.navigate('Register')}
         containerStyle={styles.registerButton as ViewStyle}
         buttonStyle={styles.registerButtonStyle}
       />
 
-      <Text style={styles.hint}>
-        Use as credenciais de exemplo:
-      </Text>
+      <Text style={styles.hint}>Use as credenciais de exemplo:</Text>
       <Text style={styles.credentials}>
         Admin: admin@example.com / 123456{'\n'}
-        Médicos: joao@example.com, maria@example.com, pedro@example.com / 123456
+        Fãs: ana@furia.gg, bruno@furia.gg, carla@furia.gg / 123456
       </Text>
     </Container>
   );

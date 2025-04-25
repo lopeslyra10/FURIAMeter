@@ -2,29 +2,26 @@ import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { ScrollView, ViewStyle, TextStyle } from 'react-native';
 import { Button, ListItem, Text } from 'react-native-elements';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 import theme from '../styles/theme';
 import Header from '../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
-type PatientDashboardScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'PatientDashboard'>;
+type FanDashboardScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'FanDashboard'>;
 };
 
-interface Appointment {
+interface Interaction {
   id: string;
-  patientId: string;
-  patientName: string;
-  doctorId: string;
-  doctorName: string;
+  fanId: string;
+  type: string; // Ex: "chat", "quiz", "stream"
   date: string;
-  time: string;
-  specialty: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  points: number;
+  status: 'pending' | 'confirmed';
 }
 
 interface StyledProps {
@@ -32,45 +29,29 @@ interface StyledProps {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return theme.colors.success;
-    case 'cancelled':
-      return theme.colors.error;
-    default:
-      return theme.colors.warning;
-  }
+  return status === 'confirmed' ? theme.colors.success : theme.colors.warning;
 };
 
 const getStatusText = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'Confirmada';
-    case 'cancelled':
-      return 'Cancelada';
-    default:
-      return 'Pendente';
-  }
+  return status === 'confirmed' ? 'Confirmada' : 'Pendente';
 };
 
-const PatientDashboardScreen: React.FC = () => {
+const FanDashboardScreen: React.FC = () => {
   const { user, signOut } = useAuth();
-  const navigation = useNavigation<PatientDashboardScreenProps['navigation']>();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const navigation = useNavigation<FanDashboardScreenProps['navigation']>();
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadAppointments = async () => {
+  const loadInteractions = async () => {
     try {
-      const storedAppointments = await AsyncStorage.getItem('@MedicalApp:appointments');
-      if (storedAppointments) {
-        const allAppointments: Appointment[] = JSON.parse(storedAppointments);
-        const userAppointments = allAppointments.filter(
-          (appointment) => appointment.patientId === user?.id
-        );
-        setAppointments(userAppointments);
+      const stored = await AsyncStorage.getItem('@FURIAMeter:interactions');
+      if (stored) {
+        const all: Interaction[] = JSON.parse(stored);
+        const userInteractions = all.filter(item => item.fanId === user?.id);
+        setInteractions(userInteractions);
       }
     } catch (error) {
-      console.error('Erro ao carregar consultas:', error);
+      console.error('Erro ao carregar interações:', error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +59,7 @@ const PatientDashboardScreen: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      loadAppointments();
+      loadInteractions();
     }, [])
   );
 
@@ -86,14 +67,7 @@ const PatientDashboardScreen: React.FC = () => {
     <Container>
       <Header />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Title>Minhas Consultas</Title>
-
-        <Button
-          title="Agendar Nova Consulta"
-          onPress={() => navigation.navigate('CreateAppointment')}
-          containerStyle={styles.button as ViewStyle}
-          buttonStyle={styles.buttonStyle}
-        />
+        <Title>Minhas Interações</Title>
 
         <Button
           title="Meu Perfil"
@@ -103,33 +77,29 @@ const PatientDashboardScreen: React.FC = () => {
         />
 
         {loading ? (
-          <LoadingText>Carregando consultas...</LoadingText>
-        ) : appointments.length === 0 ? (
-          <EmptyText>Nenhuma consulta agendada</EmptyText>
+          <LoadingText>Carregando...</LoadingText>
+        ) : interactions.length === 0 ? (
+          <EmptyText>Nenhuma interação registrada</EmptyText>
         ) : (
-          appointments.map((appointment) => (
-            <AppointmentCard key={appointment.id}>
+          interactions.map((item) => (
+            <InteractionCard key={item.id}>
               <ListItem.Content>
+                <ListItem.Title style={styles.interactionType as TextStyle}>
+                  Tipo: {item.type}
+                </ListItem.Title>
                 <ListItem.Subtitle style={styles.dateTime as TextStyle}>
-                  {appointment.date} às {appointment.time}
+                  {item.date}
                 </ListItem.Subtitle>
-                <Text style={styles.doctorName as TextStyle}>
-                  {appointment.doctorName}
+                <Text style={styles.points as TextStyle}>
+                  Pontos: {item.points}
                 </Text>
-                <Text style={styles.specialty as TextStyle}>
-                  {appointment.specialty}
-                </Text>
-                <StatusBadge status={appointment.status}>
-                  <StatusText status={appointment.status}>
-                    {getStatusText(appointment.status)}
+                <StatusBadge status={item.status}>
+                  <StatusText status={item.status}>
+                    {getStatusText(item.status)}
                   </StatusText>
                 </StatusBadge>
               </ListItem.Content>
-
-              <ListItem.Title style={styles.patientName as TextStyle}>
-                Paciente: {appointment.patientName}
-              </ListItem.Title>
-            </AppointmentCard>
+            </InteractionCard>
           ))
         )}
 
@@ -160,13 +130,14 @@ const styles = {
     backgroundColor: theme.colors.error,
     paddingVertical: 12,
   },
-  doctorName: {
-    fontSize: 18,
+  interactionType: {
+    fontSize: 16,
     fontWeight: '700',
     color: theme.colors.text,
   },
-  specialty: {
+  points: {
     fontSize: 14,
+    fontWeight: '500',
     color: theme.colors.text,
     marginTop: 4,
   },
@@ -174,11 +145,6 @@ const styles = {
     fontSize: 14,
     color: theme.colors.text,
     marginTop: 4,
-  },
-  patientName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.text,
   },
 };
 
@@ -195,7 +161,7 @@ const Title = styled.Text`
   text-align: center;
 `;
 
-const AppointmentCard = styled(ListItem)`
+const InteractionCard = styled(ListItem)`
   background-color: ${theme.colors.background};
   border-radius: 8px;
   margin-bottom: 10px;
@@ -232,4 +198,4 @@ const StatusText = styled.Text<StyledProps>`
   font-weight: 500;
 `;
 
-export default PatientDashboardScreen;
+export default FanDashboardScreen;

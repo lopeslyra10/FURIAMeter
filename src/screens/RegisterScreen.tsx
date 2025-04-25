@@ -15,9 +15,9 @@ type RegisterScreenProps = {
 const RegisterScreen: React.FC = () => {
   const { register } = useAuth();
   const navigation = useNavigation<RegisterScreenProps['navigation']>();
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,22 +25,10 @@ const RegisterScreen: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-
-      if (!name || !email || !password) {
-        setError('Por favor, preencha todos os campos');
-        return;
-      }
-
-      await register({
-        name,
-        email,
-        password,
-      });
-
-      // Após o registro bem-sucedido, navega para o login
+      await register({ name, email, password });
       navigation.navigate('Login');
     } catch (err) {
-      setError('Erro ao criar conta. Tente novamente.');
+      setError('Erro ao cadastrar. Verifique os dados e tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -48,13 +36,12 @@ const RegisterScreen: React.FC = () => {
 
   return (
     <Container>
-      <Title>Cadastro de Paciente</Title>
-      
+      <Title>Cadastro de Fã</Title>
+
       <Input
-        placeholder="Nome completo"
+        placeholder="Nome"
         value={name}
         onChangeText={setName}
-        autoCapitalize="words"
         containerStyle={styles.input}
       />
 
@@ -84,13 +71,6 @@ const RegisterScreen: React.FC = () => {
         containerStyle={styles.button as ViewStyle}
         buttonStyle={styles.buttonStyle}
       />
-
-      <Button
-        title="Voltar para Login"
-        onPress={() => navigation.navigate('Login')}
-        containerStyle={styles.backButton as ViewStyle}
-        buttonStyle={styles.backButtonStyle}
-      />
     </Container>
   );
 };
@@ -104,14 +84,6 @@ const styles = {
     width: '100%',
   },
   buttonStyle: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 12,
-  },
-  backButton: {
-    marginTop: 10,
-    width: '100%',
-  },
-  backButtonStyle: {
     backgroundColor: theme.colors.secondary,
     paddingVertical: 12,
   },
