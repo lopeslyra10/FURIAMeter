@@ -72,7 +72,8 @@ const TimeCard = styled(TouchableOpacity)<StyledProps>`
 const TimeText = styled.Text<StyledProps>`
   font-size: 12px;
   font-weight: 500;
-  color: ${(props: StyledProps) => props.isSelected ? theme.colors.primary : theme.colors.text};
+  color: ${(props: StyledProps) =>
+    props.isSelected ? theme.colors.primary : theme.colors.white};
 `;
 
 export default TimeSlotList; 
