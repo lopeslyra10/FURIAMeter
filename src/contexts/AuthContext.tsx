@@ -5,8 +5,8 @@ import { User, LoginCredentials, RegisterData, AuthContextData } from '../types/
 
 // Chaves de armazenamento
 const STORAGE_KEYS = {
-  USER: '@MedicalApp:user',
-  TOKEN: '@MedicalApp:token',
+  USER: '@FURIAMeter:user',
+  TOKEN: '@FURIAMeter:token',
 };
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);

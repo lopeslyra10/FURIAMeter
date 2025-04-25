@@ -3,54 +3,44 @@ import { User, LoginCredentials, RegisterData, AuthResponse } from '../types/aut
 
 // Chaves de armazenamento
 const STORAGE_KEYS = {
-  USER: '@MedicalApp:user',
-  TOKEN: '@MedicalApp:token',
-  REGISTERED_USERS: '@MedicalApp:registeredUsers',
+  USER: '@FURIAMeter:user',
+  TOKEN: '@FURIAMeter:token',
+  REGISTERED_FANS: '@FURIAMeter:registeredFans',
 };
 
-// Médicos mockados que podem fazer login
-const mockDoctors = [
+// Staff mockado que pode fazer login
+const mockStaff = [
   {
     id: '1',
-    name: 'Dr. João Silva',
-    email: 'joao@example.com',
-    role: 'doctor' as const,
-    specialty: 'Cardiologia',
-    image: 'https://randomuser.me/api/portraits/men/1.jpg',
+    name: 'Rafael Castello',
+    email: 'rafael@furia.gg',
+    role: 'staff' as const,
+    image: 'https://randomuser.me/api/portraits/men/5.jpg',
   },
   {
     id: '2',
-    name: 'Dra. Maria Santos',
-    email: 'maria@example.com',
-    role: 'doctor' as const,
-    specialty: 'Pediatria',
-    image: 'https://randomuser.me/api/portraits/women/1.jpg',
-  },
-  {
-    id: '3',
-    name: 'Dr. Pedro Oliveira',
-    email: 'pedro@example.com',
-    role: 'doctor' as const,
-    specialty: 'Ortopedia',
-    image: 'https://randomuser.me/api/portraits/men/2.jpg',
+    name: 'Larissa Martins',
+    email: 'larissa@furia.gg',
+    role: 'staff' as const,
+    image: 'https://randomuser.me/api/portraits/women/6.jpg',
   },
 ];
 
 // Admin mockado
 const mockAdmin = {
   id: 'admin',
-  name: 'Administrador',
-  email: 'admin@example.com',
+  name: 'Admin FURIA',
+  email: 'admin@furia.gg',
   role: 'admin' as const,
   image: 'https://randomuser.me/api/portraits/men/3.jpg',
 };
 
-// Lista de usuários cadastrados (pacientes)
-let registeredUsers: User[] = [];
+// Lista de fãs cadastrados
+let registeredFans: User[] = [];
 
 export const authService = {
   async signIn(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Verifica se é o admin
+    // Admin
     if (credentials.email === mockAdmin.email && credentials.password === '123456') {
       return {
         user: mockAdmin,
@@ -58,68 +48,59 @@ export const authService = {
       };
     }
 
-    // Verifica se é um médico
-    const doctor = mockDoctors.find(
-      (d) => d.email === credentials.email && credentials.password === '123456'
+    // Staff
+    const staff = mockStaff.find(
+      (s) => s.email === credentials.email && credentials.password === '123456'
     );
-    if (doctor) {
+    if (staff) {
       return {
-        user: doctor,
-        token: `doctor-token-${doctor.id}`,
+        user: staff,
+        token: `staff-token-${staff.id}`,
       };
     }
 
-    // Verifica se é um paciente registrado
-    const patient = registeredUsers.find(
-      (p) => p.email === credentials.email
-    );
-    if (patient) {
-      // Para pacientes, a senha padrão é 123456
-      if (credentials.password === '123456') {
-        return {
-          user: patient,
-          token: `patient-token-${patient.id}`,
-        };
-      }
+    // Fãs
+    const fan = registeredFans.find((f) => f.email === credentials.email);
+    if (fan && credentials.password === '123456') {
+      return {
+        user: fan,
+        token: `fan-token-${fan.id}`,
+      };
     }
 
     throw new Error('Email ou senha inválidos');
   },
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    // Verifica se o email já está em uso
+    // Verifica se o e-mail já está em uso
     if (
-      mockDoctors.some((d) => d.email === data.email) ||
+      mockStaff.some((s) => s.email === data.email) ||
       mockAdmin.email === data.email ||
-      registeredUsers.some((u) => u.email === data.email)
+      registeredFans.some((f) => f.email === data.email)
     ) {
       throw new Error('Email já está em uso');
     }
 
-    // Cria um novo paciente
-    const newPatient: User = {
-      id: `patient-${registeredUsers.length + 1}`,
+    // Cria novo fã
+    const newFan: User = {
+      id: `fan-${registeredFans.length + 1}`,
       name: data.name,
       email: data.email,
-      role: 'patient' as const,
-      image: `https://randomuser.me/api/portraits/${registeredUsers.length % 2 === 0 ? 'men' : 'women'}/${
-        registeredUsers.length + 1
-      }.jpg`,
+      role: 'fan' as const,
+      image: `https://randomuser.me/api/portraits/${registeredFans.length % 2 === 0 ? 'men' : 'women'}/${registeredFans.length + 10}.jpg`,
     };
 
-    registeredUsers.push(newPatient);
+    registeredFans.push(newFan);
 
-    // Salva a lista atualizada de usuários
-    await AsyncStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(registeredUsers));
+    await AsyncStorage.setItem(STORAGE_KEYS.REGISTERED_FANS, JSON.stringify(registeredFans));
 
     return {
-      user: newPatient,
-      token: `patient-token-${newPatient.id}`,
+      user: newFan,
+      token: `fan-token-${newFan.id}`,
     };
   },
 
   async signOut(): Promise<void> {
-    // Limpa os dados do usuário do AsyncStorage
     await AsyncStorage.removeItem(STORAGE_KEYS.USER);
     await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
   },
@@ -132,33 +113,32 @@ export const authService = {
       }
       return null;
     } catch (error) {
-      console.error('Erro ao obter usuário armazenado:', error);
+      console.error('Erro ao obter fã armazenado:', error);
       return null;
     }
   },
 
-  // Funções para o admin
+  // Funções para admin
   async getAllUsers(): Promise<User[]> {
-    return [...mockDoctors, ...registeredUsers];
+    return [...mockStaff, ...registeredFans];
   },
 
-  async getAllDoctors(): Promise<User[]> {
-    return mockDoctors;
+  async getStaff(): Promise<User[]> {
+    return mockStaff;
   },
 
-  async getPatients(): Promise<User[]> {
-    return registeredUsers;
+  async getFans(): Promise<User[]> {
+    return registeredFans;
   },
 
-  // Função para carregar usuários registrados ao iniciar o app
-  async loadRegisteredUsers(): Promise<void> {
+  async loadRegisteredFans(): Promise<void> {
     try {
-      const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.REGISTERED_USERS);
-      if (usersJson) {
-        registeredUsers = JSON.parse(usersJson);
+      const fansJson = await AsyncStorage.getItem(STORAGE_KEYS.REGISTERED_FANS);
+      if (fansJson) {
+        registeredFans = JSON.parse(fansJson);
       }
     } catch (error) {
-      console.error('Erro ao carregar usuários registrados:', error);
+      console.error('Erro ao carregar fãs registrados:', error);
     }
   },
-}; 
+};
