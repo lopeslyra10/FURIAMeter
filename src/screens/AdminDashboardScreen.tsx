@@ -15,14 +15,13 @@ type AdminDashboardScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'AdminDashboard'>;
 };
 
-interface Appointment {
+interface Interaction {
   id: string;
-  patientId: string;
-  doctorId: string;
-  doctorName: string;
+  fanId: string;
+  fanName: string;
+  interactionType: string;
   date: string;
   time: string;
-  specialty: string;
   status: 'pending' | 'confirmed' | 'cancelled';
 }
 
@@ -30,7 +29,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'doctor' | 'patient';
+  role: 'admin' | 'fan';
 }
 
 interface StyledProps {
@@ -60,23 +59,21 @@ const getStatusText = (status: string) => {
 };
 
 const AdminDashboardScreen: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const navigation = useNavigation<AdminDashboardScreenProps['navigation']>();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      // Carrega consultas
-      const storedAppointments = await AsyncStorage.getItem('@MedicalApp:appointments');
-      if (storedAppointments) {
-        const allAppointments: Appointment[] = JSON.parse(storedAppointments);
-        setAppointments(allAppointments);
+      const storedInteractions = await AsyncStorage.getItem('@Furiameter:interactions');
+      if (storedInteractions) {
+        const allInteractions: Interaction[] = JSON.parse(storedInteractions);
+        setInteractions(allInteractions);
       }
 
-      // Carrega usuários
-      const storedUsers = await AsyncStorage.getItem('@MedicalApp:users');
+      const storedUsers = await AsyncStorage.getItem('@Furiameter:users');
       if (storedUsers) {
         const allUsers: User[] = JSON.parse(storedUsers);
         setUsers(allUsers);
@@ -88,26 +85,22 @@ const AdminDashboardScreen: React.FC = () => {
     }
   };
 
-  // Carrega os dados quando a tela estiver em foco
   useFocusEffect(
     React.useCallback(() => {
       loadData();
     }, [])
   );
 
-  const handleUpdateStatus = async (appointmentId: string, newStatus: 'confirmed' | 'cancelled') => {
+  const handleUpdateStatus = async (interactionId: string, newStatus: 'confirmed' | 'cancelled') => {
     try {
-      const storedAppointments = await AsyncStorage.getItem('@MedicalApp:appointments');
-      if (storedAppointments) {
-        const allAppointments: Appointment[] = JSON.parse(storedAppointments);
-        const updatedAppointments = allAppointments.map(appointment => {
-          if (appointment.id === appointmentId) {
-            return { ...appointment, status: newStatus };
-          }
-          return appointment;
-        });
-        await AsyncStorage.setItem('@MedicalApp:appointments', JSON.stringify(updatedAppointments));
-        loadData(); // Recarrega os dados
+      const storedInteractions = await AsyncStorage.getItem('@Furiameter:interactions');
+      if (storedInteractions) {
+        const allInteractions: Interaction[] = JSON.parse(storedInteractions);
+        const updated = allInteractions.map(interaction =>
+          interaction.id === interactionId ? { ...interaction, status: newStatus } : interaction
+        );
+        await AsyncStorage.setItem('@Furiameter:interactions', JSON.stringify(updated));
+        loadData();
       }
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -118,10 +111,10 @@ const AdminDashboardScreen: React.FC = () => {
     <Container>
       <Header />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Title>Painel Administrativo</Title>
+        <Title>Painel Administrativo da FURIA</Title>
 
         <Button
-          title="Gerenciar Usuários"
+          title="Gerenciar Fãs"
           onPress={() => navigation.navigate('UserManagement')}
           containerStyle={styles.button as ViewStyle}
           buttonStyle={styles.buttonStyle}
@@ -134,47 +127,47 @@ const AdminDashboardScreen: React.FC = () => {
           buttonStyle={styles.buttonStyle}
         />
 
-        <SectionTitle>Últimas Consultas</SectionTitle>
+        <SectionTitle>Últimas Interações</SectionTitle>
         {loading ? (
           <LoadingText>Carregando dados...</LoadingText>
-        ) : appointments.length === 0 ? (
-          <EmptyText>Nenhuma consulta agendada</EmptyText>
+        ) : interactions.length === 0 ? (
+          <EmptyText>Nenhuma interação registrada</EmptyText>
         ) : (
-          appointments.map((appointment) => (
-            <AppointmentCard key={appointment.id}>
+          interactions.map((interaction) => (
+            <InteractionCard key={interaction.id}>
               <ListItem.Content>
-                <ListItem.Title style={styles.doctorName as TextStyle}>
-                  {appointment.doctorName}
+                <ListItem.Title style={styles.fanName as TextStyle}>
+                  {interaction.fanName}
                 </ListItem.Title>
-                <ListItem.Subtitle style={styles.specialty as TextStyle}>
-                  {appointment.specialty}
+                <ListItem.Subtitle style={styles.interactionType as TextStyle}>
+                  {interaction.interactionType}
                 </ListItem.Subtitle>
                 <Text style={styles.dateTime as TextStyle}>
-                  {appointment.date} às {appointment.time}
+                  {interaction.date} às {interaction.time}
                 </Text>
-                <StatusBadge status={appointment.status}>
-                  <StatusText status={appointment.status}>
-                    {getStatusText(appointment.status)}
+                <StatusBadge status={interaction.status}>
+                  <StatusText status={interaction.status}>
+                    {getStatusText(interaction.status)}
                   </StatusText>
                 </StatusBadge>
-                {appointment.status === 'pending' && (
+                {interaction.status === 'pending' && (
                   <ButtonContainer>
                     <Button
                       title="Confirmar"
-                      onPress={() => handleUpdateStatus(appointment.id, 'confirmed')}
+                      onPress={() => handleUpdateStatus(interaction.id, 'confirmed')}
                       containerStyle={styles.actionButton as ViewStyle}
                       buttonStyle={styles.confirmButton}
                     />
                     <Button
                       title="Cancelar"
-                      onPress={() => handleUpdateStatus(appointment.id, 'cancelled')}
+                      onPress={() => handleUpdateStatus(interaction.id, 'cancelled')}
                       containerStyle={styles.actionButton as ViewStyle}
                       buttonStyle={styles.cancelButton}
                     />
                   </ButtonContainer>
                 )}
               </ListItem.Content>
-            </AppointmentCard>
+            </InteractionCard>
           ))
         )}
 
@@ -217,12 +210,12 @@ const styles = {
     backgroundColor: theme.colors.error,
     paddingVertical: 8,
   },
-  doctorName: {
+  fanName: {
     fontSize: 18,
     fontWeight: '700',
     color: theme.colors.text,
   },
-  specialty: {
+  interactionType: {
     fontSize: 14,
     color: theme.colors.text,
     marginTop: 4,
@@ -255,7 +248,7 @@ const SectionTitle = styled.Text`
   margin-top: 10px;
 `;
 
-const AppointmentCard = styled(ListItem)`
+const InteractionCard = styled(ListItem)`
   background-color: ${theme.colors.background};
   border-radius: 8px;
   margin-bottom: 10px;
@@ -298,4 +291,4 @@ const ButtonContainer = styled.View`
   margin-top: 8px;
 `;
 
-export default AdminDashboardScreen; 
+export default AdminDashboardScreen;
