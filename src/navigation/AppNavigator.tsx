@@ -7,9 +7,7 @@ import { RootStackParamList } from "../types/navigation";
 // Telas
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import HomeScreen from "../screens/HomeScreen";
-import CreateAppointmentScreen from "../screens/CreateInteractionsScreen"; // será adaptada
-import ProfileScreen from "../screens/ProfileScreen";
+import AppRoutes from "../navigation/AppRoutes";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,14 +25,7 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         ) : (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen
-              name="CreateAppointment"
-              component={CreateAppointmentScreen}
-            />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-          </>
+          <Stack.Screen name="App" component={AppRoutes} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

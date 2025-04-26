@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import { Avatar } from 'react-native-elements';
+import { Avatar } from '@rneui/themed';
 import { useAuth } from '../contexts/AuthContext';
 import theme from '../styles/theme';
 

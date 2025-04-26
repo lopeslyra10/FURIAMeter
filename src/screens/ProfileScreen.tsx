@@ -10,11 +10,11 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <Container>
-      <Avatar
-  source={
-    user.image
-      ? { uri: user.image }
-      : require('../assets/default-avatar.png')}/>
+      <Avatar source={
+      {
+        uri: user.image || 'https://i.pravatar.cc/150?img=12',
+      }
+      }/>
       <Name>{user.name}</Name>
       <Email>{user.email}</Email>
       <Role>{user.role === 'admin' ? 'Administrador' : user.role === 'staff' ? 'Equipe FURIA' : 'Fã'}</Role>
