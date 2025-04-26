@@ -1,11 +1,16 @@
 /**
- * Tipos relacionados à autenticação e autorização
- */
-
-/**
  * Perfis de usuário disponíveis no sistema
  */
-export type UserRole = 'admin' | 'doctor' | 'patient';
+export type UserRole = 'admin' | 'staff' | 'fan';
+
+/**
+ * Links de redes sociais
+ */
+export interface SocialLinks {
+  instagram: string;
+  twitter: string;
+  steam: string;
+}
 
 /**
  * Interface base do usuário
@@ -16,21 +21,21 @@ export interface BaseUser {
   email: string;
   role: UserRole;
   image: string;
+  social: SocialLinks;
 }
 
 /**
- * Interface do médico
+ * Interface do fã
  */
-export interface Doctor extends BaseUser {
-  role: 'doctor';
-  specialty: string;
+export interface Fan extends BaseUser {
+  role: 'fan';
 }
 
 /**
- * Interface do paciente
+ * Interface da equipe (staff)
  */
-export interface Patient extends BaseUser {
-  role: 'patient';
+export interface Staff extends BaseUser {
+  role: 'staff';
 }
 
 /**
@@ -43,7 +48,7 @@ export interface Admin extends BaseUser {
 /**
  * Interface do usuário autenticado
  */
-export type User = Admin | Doctor | Patient;
+export type User = Admin | Staff | Fan;
 
 /**
  * Dados necessários para login
@@ -78,5 +83,5 @@ export interface AuthContextData {
   loading: boolean;
   signIn: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  signOut: () => Promise<void>;@rneui
-} 
+  signOut: () => Promise<void>;
+}

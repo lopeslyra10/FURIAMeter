@@ -2,6 +2,9 @@
  * Tipos relacionados à navegação
  * Este arquivo contém todas as definições de tipos necessárias para a navegação entre telas
  */
+
+import { User } from "./auth";
+
 /**
  * Define as rotas disponíveis na aplicação e seus parâmetros
  * @property Login - Tela de login
@@ -21,7 +24,8 @@ export type RootStackParamList = {
   CreateInteraction: undefined;
   Profile: undefined;
   AdminDashboard: undefined;
-  StaffDashboard: undefined;
-  FanDashboard: undefined;
+  DoctorDashboard: undefined;
+  PatientDashboard: undefined;
   UserManagement: undefined;
+  EditFan: { fan: User }; // <- nova rota
 };

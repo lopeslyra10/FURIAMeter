@@ -113,9 +113,9 @@ const FanManagementScreen: React.FC = () => {
                   </RoleText>
                 </RoleBadge>
                 <ButtonContainer>
-                  <Button
+                <Button
                     title="Editar"
-                    onPress={() => {}}
+                    onPress={() => navigation.navigate('EditFan', { fan })}
                     containerStyle={styles.actionButton as ViewStyle}
                     buttonStyle={styles.editButton}
                   />
