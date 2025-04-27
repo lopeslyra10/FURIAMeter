@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { ScrollView, ViewStyle, TextStyle } from 'react-native';
-import { Button, ListItem, Text } from 'react-native-elements';
+import { Button, ListItem, Text } from '@rneui/themed'; // <-- Corrigido aqui
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { Button, Icon } from 'react-native-elements';
+import { Button, Icon } from '@rneui/themed';
 import { FontAwesome } from '@expo/vector-icons';
 import { HeaderContainer, HeaderTitle } from '../components/Header';
 import theme from '../styles/theme';
@@ -9,21 +9,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../types/navigation';
 import { useFocusEffect } from '@react-navigation/native';
+import { Interaction } from '../types/interaction'; // Import do tipo correto
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
 };
-
-interface Interaction {
-  id: string;
-  fanId: string;
-  fanName: string;
-  interactionType: string;
-  description: string;
-  date: string;
-  time: string;
-  status: 'pending' | 'confirmed';
-}
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [interactions, setInteractions] = useState<Interaction[]>([]);
@@ -31,7 +21,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const loadInteractions = async () => {
     try {
-      const stored = await AsyncStorage.getItem('@Furiameter:interactions');
+      const stored = await AsyncStorage.getItem('@FURIAMeter:interactions');
       if (stored) {
         setInteractions(JSON.parse(stored));
       }
@@ -56,12 +46,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return (
       <InteractionCard>
         <InfoContainer>
-          <InteractionType>{item.interactionType}</InteractionType>
-          <DateTime>{item.date} às {item.time}</DateTime>
-          <Description>{item.description}</Description>
-          <Status status={item.status}>
+          <InteractionType>{item.type}</InteractionType>
+          <DateTime>{item.date}</DateTime>
+          <Points>{item.points} pontos</Points>
+          <StatusBadge status={item.status}>
             {item.status === 'pending' ? 'Pendente' : 'Confirmada'}
-          </Status>
+          </StatusBadge>
           <ActionButtons>
             <ActionButton>
               <Icon name="edit" type="material" size={20} color={theme.colors.primary} />
@@ -96,7 +86,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             backgroundColor: theme.colors.primary,
             borderRadius: 8,
             padding: 12,
-            marginBottom: theme.spacing.medium
+            marginBottom: theme.spacing.medium,
           }}
           onPress={() => navigation.navigate('CreateInteraction')}
         />
@@ -127,7 +117,7 @@ const Content = styled.View`
   padding: ${theme.spacing.medium}px;
 `;
 
-const InteractionList = styled(FlatList)`
+const InteractionList = styled(FlatList as new () => FlatList<Interaction>)`
   flex: 1;
 `;
 
@@ -159,17 +149,21 @@ const DateTime = styled.Text`
   margin-top: 4px;
 `;
 
-const Description = styled.Text`
+const Points = styled.Text`
   font-size: ${theme.typography.body.fontSize}px;
-  color: ${theme.colors.text};
-  opacity: 0.8;
+  color: ${theme.colors.success};
   margin-top: 4px;
 `;
 
-const Status = styled.Text<{ status: string }>`
-  font-size: ${theme.typography.body.fontSize}px;
-  color: ${(props) => props.status === 'pending' ? theme.colors.error : theme.colors.success};
-  margin-top: 4px;
+const StatusBadge = styled.Text<{ status: string }>`
+  align-self: flex-start;
+  background-color: ${(props) =>
+    props.status === 'pending' ? theme.colors.error : theme.colors.success};
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-top: 8px;
+  font-size: 12px;
   font-weight: bold;
 `;
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Alert, ScrollView } from 'react-native';
 import styled from 'styled-components/native';
-import { Input, Button } from 'react-native-elements';
+import { Input, Button } from '@rneui/themed'; // Atualizado
 import { useAuth } from '../contexts/AuthContext';
 import theme from '../styles/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,11 +39,11 @@ const FURIASyncScreen: React.FC = () => {
     await AsyncStorage.setItem('@FURIAMeter:registered_users', JSON.stringify(users));
     await AsyncStorage.setItem('@FURIAMeter:user', JSON.stringify(updatedUser));
 
-    alert('Preferências salvas com sucesso!');
+    Alert.alert('Sucesso', 'Preferências salvas com sucesso!');
   };
 
   return (
-    <Container>
+    <Container contentContainerStyle={{ padding: 20 }}>
       <Title>FURIASync</Title>
 
       <Input
@@ -74,9 +75,8 @@ const FURIASyncScreen: React.FC = () => {
   );
 };
 
-const Container = styled.ScrollView`
+const Container = styled(ScrollView)`
   flex: 1;
-  padding: 20px;
   background-color: ${theme.colors.background};
 `;
 

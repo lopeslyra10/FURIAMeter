@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollView } from 'react-native'; // Import necessário
 import styled from 'styled-components/native';
 import { useAuth } from '../contexts/AuthContext';
 import theme from '../styles/theme';
@@ -9,30 +10,27 @@ const ProfileScreen: React.FC = () => {
   if (!user) return null;
 
   return (
-    <Container>
-      <Avatar source={
-      {
+    <Container contentContainerStyle={{ padding: 20 }}>
+      <Avatar source={{
         uri: user.image || 'https://i.pravatar.cc/150?img=12',
-      }
-      }/>
+      }} />
       <Name>{user.name}</Name>
       <Email>{user.email}</Email>
       <Role>{user.role === 'admin' ? 'Administrador' : user.role === 'staff' ? 'Equipe FURIA' : 'Fã'}</Role>
 
       <SectionTitle>Redes Sociais</SectionTitle>
       <Label>Instagram:</Label>
-      <Value>{user.social?.instagram}</Value>
+      <Value>{user.social?.instagram || '-'}</Value>
       <Label>Twitter:</Label>
-      <Value>{user.social?.twitter}</Value>
+      <Value>{user.social?.twitter || '-'}</Value>
       <Label>Steam:</Label>
-      <Value>{user.social?.steam}</Value>
+      <Value>{user.social?.steam || '-'}</Value>
     </Container>
   );
 };
 
-const Container = styled.ScrollView`
+const Container = styled(ScrollView)`
   flex: 1;
-  padding: 20px;
   background-color: ${theme.colors.background};
 `;
 

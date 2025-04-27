@@ -15,8 +15,9 @@ const Header: React.FC = () => {
         <Avatar
           size="medium"
           rounded
-          source={{ uri: user.image }}
+          source={user.image ? { uri: user.image } : undefined}
           containerStyle={styles.avatar}
+          title={user.name ? user.name[0] : '?'} // Se não tiver imagem, aparece a inicial do nome
         />
         <TextContainer>
           <WelcomeText>Fala, FURIOSO!</WelcomeText>

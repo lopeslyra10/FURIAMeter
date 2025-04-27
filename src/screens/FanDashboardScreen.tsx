@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { ScrollView, ViewStyle, TextStyle } from 'react-native';
-import { Button, ListItem, Text } from 'react-native-elements';
+import { Button, ListItem, Text } from '@rneui/themed'; // atualizado
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,7 +18,7 @@ type FanDashboardScreenProps = {
 interface Interaction {
   id: string;
   fanId: string;
-  type: string; // Ex: "chat", "quiz", "stream"
+  type: string;
   date: string;
   points: number;
   status: 'pending' | 'confirmed';
